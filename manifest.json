@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "OpenGander Contact Agent",
+  "version": "1.0.0",
+  "description": "Get your own copy of the analytics data sites collect about you via the OpenGander Contact Protocol.",
+  "permissions": ["storage", "downloads", "alarms"],
+  "background": {
+    "service_worker": "service-worker.js",
+    "scripts": [
+      "lib/db.js",
+      "lib/synthesizer.js",
+      "lib/exporters/base.js",
+      "lib/exporters/json-file.js",
+      "lib/exporters/otlp-http.js",
+      "lib/exporters/index.js",
+      "service-worker.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "OpenGander Contact Agent",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

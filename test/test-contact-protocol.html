@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Protocol Test</title>
+  <style>
+    body { font-family: system-ui; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    pre { background: #1f2937; color: #e5e7eb; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+    button { padding: 8px 16px; border-radius: 8px; border: 1px solid #d1d5db; background: white; cursor: pointer; margin: 4px; }
+    .status { padding: 8px 12px; border-radius: 8px; font-size: 13px; margin: 8px 0; }
+    .ok { background: #d1fae5; color: #065f46; }
+    .warn { background: #fef3c7; color: #92400e; }
+    #log { list-style: none; padding: 0; }
+    #log li { padding: 4px 0; font-family: monospace; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  </style>
+</head>
+<body>
+  <h1>Contact Protocol Test</h1>
+  <p>Load this page with the extension installed and the OpenGander SDK configured.</p>
+
+  <h2>Extension Status</h2>
+  <div id="ext-status" class="status warn">Checking...</div>
+
+  <h2>Handshake Log</h2>
+  <ul id="log"></ul>
+
+  <h2>Actions</h2>
+  <button onclick="checkExtension()">Check Extension</button>
+  <button onclick="simulateProposal()">Simulate SDK Proposal</button>
+
+  <script>
+    const log = document.getElementById('log');
+    const status = document.getElementById('ext-status');
+
+    function addLog(msg) {
+      const li = document.createElement('li');
+      li.textContent = new Date().toISOString().substr(11, 12) + ' ' + msg;
+      log.prepend(li);
+    }
+
+    function checkExtension() {
+      if (window.__contact && window.__contact.ready) {
+        status.className = 'status ok';
+        status.textContent = 'Extension detected (v' + window.__contact.version + ')';
+        addLog('Extension detected');
+      } else {
+        status.className = 'status warn';
+        status.textContent = 'No extension detected';
+        addLog('No extension found');
+      }
+    }
+
+    function simulateProposal() {
+      addLog('Dispatching contact:propose...');
+
+      document.addEventListener('contact:accept', (e) => {
+        addLog('ACCEPTED: participant_id=' + e.detail.participant_id);
+      }, { once: true });
+
+      document.addEventListener('contact:decline', () => {
+        addLog('DECLINED');
+      }, { once: true });
+
+      document.dispatchEvent(new CustomEvent('contact:propose', {
+        detail: {
+          session_timeout_ms: 1800000,
+          ring: 'traffic',
+          attributes_collected: ['page_url', 'referrer', 'web_vitals', 'timing'],
+          collector_endpoint: 'https://test.example.com/v1/traces',
+          service_name: 'contact-protocol-test'
+        }
+      }));
+    }
+
+    // Auto-check on load
+    setTimeout(checkExtension, 500);
+  </script>
+</body>
+</html>
